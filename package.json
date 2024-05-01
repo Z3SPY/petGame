@@ -11,5 +11,9 @@
   "devDependencies": {
     "typescript": "^5.2.2",
     "vite": "^5.2.0"
+  },
+  "dependencies": {
+    "child_process": "^1.0.2",
+    "regenerator-runtime": "^0.14.1"
   }
 }
