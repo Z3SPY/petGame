@@ -18,20 +18,26 @@
   position: absolute;
   display: flex;
   flex-direction: column;
-  top: 50%;
+  right: 0%;
+  /*top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: #f9f9f9;
+  transform: translate(-50%, -50%);*/ 
   height: 100vh;
-  width: 50vw;
-
+  width: 60vw;
+  background-color: #f9f9f9;
 }
 
+/* SIDE DIV */
+.side-div {
+  background-color: #007bff;
+  height: 100%;
+  width: 40vw;
+  position:absolute;
+}
 
 /* STATUS BAR */
 
 .statusBar {
-  height: 5rem;
   position: relative;
   flex-grow: 1;
 
@@ -77,11 +83,8 @@
   border: 5px solid black;
   position: relative;
   background-color: black;
-  left: 50%;
-  transform: translate(-50%, 0%);
   
-  width: 700px;
-  height: 700px;
+  flex-grow: 2;
   box-shadow: 0 0 50px rgba(0, 0, 0, 0.774)
 }
 
