@@ -10,24 +10,39 @@
   </head>
   <body>
     <div class="side-div"> 
-a
-    </div>
-    
-    <div class="centered-div"> 
       <div class="statusBar">
+
+        
         <div id="hngrValTxt">
           HUNGER: <span ></span>
+          <div id="hngrLoad">
+            <div class="fill"></div>
+            <div class="boxHolder"></div>
+          </div>
         </div>
 
         <div id="clnValTxt">
           CLEANLINESS: <span ></span>
+          <div id="clnLoad">
+            <div class="fill"></div>
+            <div class="boxHolder"> </div>
+          </div>
         </div>
 
         <div id="enjyValTxt">
           ENJOYMENT: <span ></span>
+          <div id="enjyLoad">
+            <div class="fill"></div>
+            <div class="boxHolder"> </div>
+
+          </div>
         </div>
 
       </div>
+    </div>
+    
+    <div class="centered-div"> 
+      
 
       <canvas id="gameCanvas">
       </canvas>
@@ -41,6 +56,25 @@ a
 
     <script src="src/gameScript.ts"></script>
     <script src="src/voice.js"></script>
+    <script>
+      // Number of times to print the structure
+      const timesToPrint = 5;
+      
+      // Reference to the boxHolder divs
+      const boxHolders = document.querySelectorAll('.boxHolder');
+      
+      // Loop to print the structure for each boxHolder
+      boxHolders.forEach(boxHolder => {
+        for (let i = 0; i < timesToPrint; i++) {
+          // Create the box div
+          const box = document.createElement('div');
+          box.classList.add('box');
+          
+          // Append the box to the boxHolder div
+          boxHolder.appendChild(box);
+        }
+      });
+    </script>
 
   </body>
 </html>
