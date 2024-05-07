@@ -46,18 +46,22 @@ class Animal {
 
     state: AnimalState = AnimalState.Moving; // Initial state is Moving
 
+
+    //Animation States
     image: HTMLImageElement = new Image();
-    spriteSheetURL: string = '/cool-removebg-preview.png';
-    cols: number = 4;
-    rows: number = 2;
-    spriteWidth: number = 1000;
-    spriteHeight: number = 250;
+    spriteSheetURL: string = '/SpriteSheet.png';
+    cols: number = 6;
+    rows: number = 3;
+    spriteWidth: number = 700;
+    spriteHeight: number = 350;
     spriteWdOfst: number = this.spriteWidth / this.cols; // width in px / cols spacing = Value of SpriteWidth
     spriteHtOfst: number = this.spriteHeight / this.rows; // height in px / rows spacing = Sprite height
     frameX: number = 0;
-    frameY: number = 0;
+    frameY: number = 1;
     gameFrame: number = 0;
     staggerFrames: number = 2;
+
+    spriteAnimationsStates: any;
 
     constructor(xPos: number, yPos: number, w: number, h: number) {
         this.hungerVal = 100;
@@ -86,7 +90,54 @@ class Animal {
 
         //Image 
         this.image.src = this.spriteSheetURL;
+
+
+
+        // SPRITE ANIMATION POSITIONS
+        this.spriteAnimationsStates = {
+            "idle": {
+                name: "idle",
+                frames: 6,
+            },
+            "jump": {
+                name: "idle",
+                frames: 6,            
+            }
+        };
     }
+
+    updateSpriteVals (newSpriteSheet: string, animCols: number, animRows: number, newSpriteHeight: number, newSpriteWidth: number) {
+
+        this.spriteSheetURL = newSpriteSheet;
+        this.cols = animCols;
+        this.rows = animRows;
+        this.spriteWidth = newSpriteWidth;
+        this.spriteHeight = newSpriteHeight;
+    }
+
+    animateSprite(deltaTime: number) {
+        // Draw animal on the canvas
+        
+        this.gameFrame += deltaTime;
+        if (this.gameFrame >= this.staggerFrames * (1000 / 15)) { // 1000 ms / 15 frames per second
+            this.gameFrame = 0;
+            if (this.frameX < this.cols - 1) this.frameX++;
+            else this.frameX = 0;
+        }
+        ctx.drawImage(
+            this.image,
+            this.spriteWdOfst * this.frameX,
+            this.spriteHtOfst * this.frameY,
+            this.spriteWdOfst,
+            this.spriteHtOfst,
+            this.xPos,
+            this.yPos,
+            this.w + 50,
+            this.h + 10
+        );
+
+    }
+    
 
     updateStatus() {
         hungerText.innerText = `${this.hungerVal.toString()}%`;
@@ -130,7 +181,7 @@ class Animal {
         if (this.xPos + this.w >= CANVAS_WIDTH * .75 || this.xPos < CANVAS_WIDTH * .25) {
             this.vx *= -1; // Reverse direction on hitting horizontal boundaries
         }
-        if (this.yPos + this.h >= CANVAS_HEIGHT || this.yPos < 0) {
+        if (this.yPos + this.h >= CANVAS_HEIGHT * .90 || this.yPos < CANVAS_HEIGHT * .10) {
             this.vy *= -1; // Reverse direction on hitting vertical boundaries
         }
 
@@ -157,30 +208,20 @@ class Animal {
         this.performActions(deltaTime);
         this.handleBoundaries();
 
-        // Draw animal on the canvas
-        this.gameFrame += deltaTime;
-        if (this.gameFrame >= this.staggerFrames * (1000 / 15)) { // 1000 ms / 15 frames per second
-            this.gameFrame = 0;
-            if (this.frameX < this.cols - 1) this.frameX++;
-            else this.frameX = 0;
-        }
-        ctx.drawImage(
-            this.image,
-            this.spriteWdOfst * this.frameX,
-            this.spriteHtOfst * this.frameY,
-            this.spriteWdOfst,
-            this.spriteHtOfst,
-            this.xPos,
-            this.yPos,
-            this.w + 50,
-            this.h + 10
-        );
+        this.animateSprite(deltaTime);
     }
 }
 
+const spawnMinX = CANVAS_WIDTH * 0.3; // Minimum spawn position (30% of canvas width)
+const spawnMaxX = CANVAS_WIDTH * 0.8; // Maximum spawn position (80% of canvas width)
+const spawnMinY = CANVAS_HEIGHT * 0.3; // Minimum spawn position (30% of canvas height)
+const spawnMaxY = CANVAS_HEIGHT * 0.8; // Maximum spawn position (80% of canvas height)
 
+// Generate a random spawn position for X and Y
+const randomSpawnX = spawnMinX + Math.random() * (spawnMaxX - spawnMinX);
+const randomSpawnY = spawnMinY + Math.random() * (spawnMaxY - spawnMinY);
 
-let myAnimal: Animal = new Animal(Math.random() * (CANVAS_WIDTH * .50), Math.random() * (CANVAS_HEIGHT * .50), CANVAS_WIDTH * .05, CANVAS_HEIGHT * .10);
+let myAnimal: Animal = new Animal(randomSpawnX, randomSpawnY, CANVAS_WIDTH * .05, CANVAS_HEIGHT * .10);
 
 let lastFrameTime = performance.now(); // Move lastFrameTime to the global scope
 
