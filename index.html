@@ -9,49 +9,72 @@
 
   </head>
   <body>
-    <div class="side-div"> 
-      <div class="statusBar">
-
+    <div class="decorator">
         
-        <div id="hngrValTxt">
-          HUNGER: <span ></span>
-          <div id="hngrLoad">
-            <div class="fill"></div>
-            <div class="boxHolder"></div>
-          </div>
-        </div>
-
-        <div id="clnValTxt">
-          CLEANLINESS: <span ></span>
-          <div id="clnLoad">
-            <div class="fill"></div>
-            <div class="boxHolder"> </div>
-          </div>
-        </div>
-
-        <div id="enjyValTxt">
-          ENJOYMENT: <span ></span>
-          <div id="enjyLoad">
-            <div class="fill"></div>
-            <div class="boxHolder"> </div>
-
-          </div>
-        </div>
-
-      </div>
     </div>
+
+    
     
     <div class="centered-div"> 
+
+      <div class="side-div"> 
+        <div class="statusBar">
+  
+          
+          <div id="hngrValTxt">
+            HUNGER: <span ></span>
+            <div id="hngrLoad">
+              <div class="fill"></div>
+              <div class="boxHolder"></div>
+            </div>
+          </div>
+  
+          <div id="clnValTxt">
+            CLEANLINESS: <span ></span>
+            <div id="clnLoad">
+              <div class="fill"></div>
+              <div class="boxHolder"> </div>
+            </div>
+          </div>
+  
+          <div id="enjyValTxt">
+            ENJOYMENT: <span ></span>
+            <div id="enjyLoad">
+              <div class="fill"></div>
+              <div class="boxHolder"> </div>
+  
+            </div>
+  
+          </div>
+          <button id="toggleButton" style="background-color: transparent;">
+            <img src="/arrow.svg" alt="Toggle Icon"  width="70" height="70" style="filter: brightness(0) invert(1);">
+          </button>
+
+          <div class="hearts">
+            
+
+          </div>
+        
+  
+        </div>
+  
+        <div class="shop-menu">
+          <div class="coins"> <p>COINS: </p> </div>
+        </div>
+      </div>
+
       
 
       <canvas id="gameCanvas">
       </canvas>
       <div class="btnChoices">
-        <button> Feed </button>
-        <button> Play </button>
-        <button> Clean </button>
-        <button id="speakButton"> Speak </button>
+        <button> FEED </button>
+        <button> PLAY </button>
+        <button> CLEAN </button>
+        <button id="speakButton"> SPEAK </button>
       </div>
+
+
     </div>
 
     <script src="src/gameScript.ts"></script>
@@ -74,6 +97,12 @@
           boxHolder.appendChild(box);
         }
       });
+
+      document.getElementById('toggleButton').addEventListener('click', function() {
+        // Toggle the visibility of the side div
+        toggleButton.classList.toggle('toggled');
+        document.querySelector('.side-div').classList.toggle('hidden');
+    });
     </script>
 
   </body>

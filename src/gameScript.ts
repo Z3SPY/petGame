@@ -4,8 +4,23 @@ const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
 const ctx  = canvas?.getContext('2d')!;
 
 
-const CANVAS_WIDTH : number =  canvas.width = canvas.getBoundingClientRect().width;
-const CANVAS_HEIGHT : number = canvas.height = canvas.getBoundingClientRect().height;
+let CANVAS_WIDTH : number =  canvas.width = canvas.getBoundingClientRect().width;
+let CANVAS_HEIGHT : number = canvas.height = canvas.getBoundingClientRect().height;
+let spawnMinX = CANVAS_WIDTH * 0.3; // Minimum spawn position (30% of canvas width)
+let spawnMaxX = CANVAS_WIDTH * 0.8; // Maximum spawn position (80% of canvas width)
+let spawnMinY = CANVAS_HEIGHT * 0.3; // Minimum spawn position (30% of canvas height)
+let spawnMaxY = CANVAS_HEIGHT * 0.8; // Maximum spawn position (80% of canvas height)
+
+// Generate a random spawn position for X and Y
+const randomSpawnX = spawnMinX + Math.random() * (spawnMaxX - spawnMinX);
+const randomSpawnY = spawnMinY + Math.random() * (spawnMaxY - spawnMinY);
+
+
+//COINTS
+let coins = 0;
+
+
+// Other code from your game, including the animation loop and other logic
 
 
 
@@ -39,7 +54,7 @@ class Animal {
     yPos: number;
     w: number;
     h: number;
-    speed: number = 200;
+    speed: number = 100;
 
     vx: number;
     vy: number;
@@ -51,9 +66,9 @@ class Animal {
     image: HTMLImageElement = new Image();
     spriteSheetURL: string = '/SpriteSheet.png';
     cols: number = 6;
-    rows: number = 3;
+    rows: number = 6;
     spriteWidth: number = 700;
-    spriteHeight: number = 350;
+    spriteHeight: number = 700;
     spriteWdOfst: number = this.spriteWidth / this.cols; // width in px / cols spacing = Value of SpriteWidth
     spriteHtOfst: number = this.spriteHeight / this.rows; // height in px / rows spacing = Sprite height
     frameX: number = 0;
@@ -61,7 +76,7 @@ class Animal {
     gameFrame: number = 0;
     staggerFrames: number = 2;
 
-    spriteAnimationsStates: any;
+    anmStates: any;
 
     constructor(xPos: number, yPos: number, w: number, h: number) {
         this.hungerVal = 100;
@@ -74,8 +89,8 @@ class Animal {
         this.yPos = yPos;
         this.w = w;
         this.h = h;
-        this.vx = (Math.random() - 0.5) * this.speed; // Random number between -1 and 1
-        this.vy = (Math.random() - 0.5) * this.speed;
+        this.vx = Math.random() < 0.5 ? -1 : 1;
+        this.vy = Math.random() < 0.5 ? -1 : 1;
 
         this.updateStatus();
         let moveInterval = 5000;
@@ -94,14 +109,27 @@ class Animal {
 
 
         // SPRITE ANIMATION POSITIONS
-        this.spriteAnimationsStates = {
+        this.anmStates = {
             "idle": {
                 name: "idle",
                 frames: 6,
+                rowNum: 0
             },
-            "jump": {
-                name: "idle",
-                frames: 6,            
+            "walkleft": {
+                name: "walk-left",
+                frames: 6,
+                rowNum: 1            
+            }, 
+            "walkright": {
+                name: "walk-right",
+                frames: 6, 
+                rowNum: 2           
+            },
+            "feed": {
+                name: "feed",
+            },
+            "clean": {
+                name: "clean"
             }
         };
     }
@@ -117,7 +145,8 @@ class Animal {
 
     animateSprite(deltaTime: number) {
         // Draw animal on the canvas
-        
+
+         
         this.gameFrame += deltaTime;
         if (this.gameFrame >= this.staggerFrames * (1000 / 15)) { // 1000 ms / 15 frames per second
             this.gameFrame = 0;
@@ -150,6 +179,9 @@ class Animal {
 
     }
 
+
+
+    /*STATUSES*/ 
     decreaseHunger() {
         // Decrease hunger by a certain amount
         this.hungerVal -= 1; // You can adjust the amount as needed
@@ -157,6 +189,8 @@ class Animal {
             this.hungerVal = 0; // Ensure hungerVal doesn't go below 0
         }
         this.updateStatus(); // Update the hunger text
+        updateHearts(); // Update the hearts
+
     }
 
     decreaseClean() {
@@ -166,6 +200,8 @@ class Animal {
             this.cleanVal = 0; // Ensure hungerVal doesn't go below 0
         }
         this.updateStatus(); // Update the hunger text
+        updateHearts(); // Update the hearts
+
     }
 
     decreaseEnjoyment() {
@@ -175,10 +211,20 @@ class Animal {
             this.playVal = 0; // Ensure hungerVal doesn't go below 0
         }
         this.updateStatus(); // Update the hunger text
+        updateHearts(); // Update the hearts
+
     }
 
+    petIncrease(types: string, gold: number) {
+        
+    }
+
+    /*STATUSES END*/ 
+
+
     handleBoundaries() {
-        if (this.xPos + this.w >= CANVAS_WIDTH * .75 || this.xPos < CANVAS_WIDTH * .25) {
+
+        if (this.xPos + this.w >= CANVAS_WIDTH * .90 || this.xPos < CANVAS_WIDTH * .10) {
             this.vx *= -1; // Reverse direction on hitting horizontal boundaries
         }
         if (this.yPos + this.h >= CANVAS_HEIGHT * .90 || this.yPos < CANVAS_HEIGHT * .10) {
@@ -191,35 +237,50 @@ class Animal {
         this.state = newState;
     }
 
+
+    changeFrame(newFrameY : number, newFrameX : number, ) {
+        this.frameY = newFrameY;
+        this.cols = newFrameX;
+    }
+
     performActions(deltaTime: number) {
+
+        //Animations
         switch (this.state) {
             case AnimalState.Idle:
+                this.changeFrame(this.anmStates.idle.rowNum, this.anmStates.idle.frames);
                 break;
             case AnimalState.Moving:
+
+                if (this.vx == 0) {
+                    return
+                }
+                else if (this.vx <= -1) {
+                    this.changeFrame(this.anmStates.walkleft.rowNum, this.anmStates.walkleft.frames);
+                } else if (this.vx >= 1) {
+                    this.changeFrame(this.anmStates.walkright.rowNum, this.anmStates.walkright.frames);
+                   
+                }
+
                 const deltaX = this.vx * (deltaTime / 1000);
                 const deltaY = this.vy * (deltaTime / 1000);
-                this.xPos += deltaX;
-                this.yPos += deltaY;
+                this.xPos += deltaX * this.speed;
+                this.yPos += deltaY * this.speed;
                 break;
         }
     }
 
     draw(ctx: CanvasRenderingContext2D, deltaTime: number) {
         this.performActions(deltaTime);
-        this.handleBoundaries();
 
         this.animateSprite(deltaTime);
+        this.handleBoundaries();
+
     }
 }
 
-const spawnMinX = CANVAS_WIDTH * 0.3; // Minimum spawn position (30% of canvas width)
-const spawnMaxX = CANVAS_WIDTH * 0.8; // Maximum spawn position (80% of canvas width)
-const spawnMinY = CANVAS_HEIGHT * 0.3; // Minimum spawn position (30% of canvas height)
-const spawnMaxY = CANVAS_HEIGHT * 0.8; // Maximum spawn position (80% of canvas height)
 
-// Generate a random spawn position for X and Y
-const randomSpawnX = spawnMinX + Math.random() * (spawnMaxX - spawnMinX);
-const randomSpawnY = spawnMinY + Math.random() * (spawnMaxY - spawnMinY);
+
 
 let myAnimal: Animal = new Animal(randomSpawnX, randomSpawnY, CANVAS_WIDTH * .05, CANVAS_HEIGHT * .10);
 
@@ -244,45 +305,98 @@ animate(); // Start the animation loop initially
 
 
 //End StateMachine
-let intervalId: number; // Declare intervalId as a global variable
-intervalId = setInterval(() => {
-    myAnimal.decreaseHunger(); // Resume interval for decreasing hunger
-}, 2000); 
-intervalId = setInterval(() => {
-    myAnimal.decreaseEnjoyment();
-}, 5000);
-intervalId = setInterval(() => {
-    myAnimal.decreaseClean();
+let hungerIntervalId: number; // Declare intervalId as a global variable for each status
+let enjoymentIntervalId: number;
+let cleanlinessIntervalId: number;
+
+hungerIntervalId = setInterval(() => {
+    myAnimal.decreaseHunger(); // Decrease hunger every 2 seconds
+}, 4000); 
+
+enjoymentIntervalId = setInterval(() => {
+    myAnimal.decreaseEnjoyment(); // Decrease enjoyment every 5 seconds
 }, 3000);
+
+cleanlinessIntervalId = setInterval(() => {
+    myAnimal.decreaseClean(); // Decrease cleanliness every 3 seconds
+}, 2000);
 
 // Handle tab visibility change
 function handleVisibilityChange() {
+
+    
     if (document.hidden) {
         // Tab is not visible, so pause the animation and intervals
         cancelAnimationFrame(animationId);
-        clearInterval(intervalId);
+        clearInterval(hungerIntervalId);
+        clearInterval(enjoymentIntervalId);
+        clearInterval(cleanlinessIntervalId);
     } else {
+
+        clearInterval(hungerIntervalId);
+        clearInterval(enjoymentIntervalId);
+        clearInterval(cleanlinessIntervalId);
+        cancelAnimationFrame(animationId);
+
         // Tab is visible, so resume the animation and intervals
         lastFrameTime = performance.now(); // Reset lastFrameTime to avoid large deltaTime on resume
         animate(); // Start animation loop again
-        
-        // Resume interval for decreasing hunger
-        intervalId = setInterval(() => {
+        // Restart intervals for each status
+        hungerIntervalId = setInterval(() => {
             myAnimal.decreaseHunger();
-        }, 2000); // Adjust the interval time as needed
-        intervalId = setInterval(() => {
+        }, 2000);
+        enjoymentIntervalId = setInterval(() => {
             myAnimal.decreaseEnjoyment();
         }, 5000);
-        intervalId = setInterval(() => {
+        cleanlinessIntervalId = setInterval(() => {
             myAnimal.decreaseClean();
         }, 3000);
+        
     }
 }
 
 document.addEventListener("visibilitychange", handleVisibilityChange, false);
 
 
-document.addEventListener("visibilitychange", handleVisibilityChange, false);
 
 
 
+/* HEARTS */
+
+function updateHearts() {
+    const heartsDiv = document.querySelector('.hearts');
+    heartsDiv!.innerHTML = ''; // Clear previous hearts
+    
+    const statusValue: { [key: string]: number } = {
+      hunger: myAnimal.hungerVal,
+      cleanliness: myAnimal.cleanVal,
+      enjoyment: myAnimal.playVal
+    };
+    
+    // Populate hearts based on status values
+    Object.keys(statusValue).forEach(status => {
+      const numHearts = Math.min(statusValue[status] > 0 ? Math.ceil(statusValue[status] / 50) : 0, 2); // Each heart represents 33.4%
+      for (let i = 0; i < numHearts; i++) {
+        const heartIcon = document.createElement('img');
+        heartIcon.src = 'heart-icon.png'; // Replace with your heart icon source
+        heartsDiv!.appendChild(heartIcon);
+      }
+    });
+}
+
+// Call updateHearts initially and whenever status values change
+updateHearts();
+
+
+
+/* Manage Global Coins */ 
+var coinText: HTMLElement | null = document.querySelector('.coins p');
+
+function updateCoins() {
+    coins++;
+    coinText!.innerText = `COINS: ${coins}`;
+}
+
+setInterval(() => {
+    updateCoins() 
+}, 1000);
