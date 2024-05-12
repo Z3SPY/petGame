@@ -3,6 +3,12 @@
 const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
 const ctx  = canvas?.getContext('2d')!;
 
+class newPet {
+    constructor() {
+        
+    }
+}
+
 
 let CANVAS_WIDTH : number =  canvas.width = canvas.getBoundingClientRect().width;
 let CANVAS_HEIGHT : number = canvas.height = canvas.getBoundingClientRect().height;
@@ -40,6 +46,9 @@ let hungerFill : HTMLElement = document.querySelector('#hngrValTxt .fill') as HT
 enum AnimalState {
     Moving,
     Idle, 
+    Eating,
+    Playing,
+    Clean,
     Dragged  //If click on box dragged
 }
 
@@ -95,13 +104,19 @@ class Animal {
         this.updateStatus();
         let moveInterval = 5000;
         let idleInterval = 2000;
-        setInterval(() => {
-            // Transition to the Idle state after the interval finishes
-            this.updateState(AnimalState.Idle);
-            setTimeout(() => {
-                this.updateState(AnimalState.Moving);
-            }, idleInterval);
-        }, moveInterval);
+
+        if (this.state == AnimalState.Clean || this.state == AnimalState.Eating || this.state == AnimalState.Playing) {
+            return;
+        } else {
+            setInterval(() => {
+                // Transition to the Idle state after the interval finishes
+                this.updateState(AnimalState.Idle);
+                setTimeout(() => {
+                    this.updateState(AnimalState.Moving);
+                }, idleInterval);
+            }, moveInterval);
+        }
+        
 
         //Image 
         this.image.src = this.spriteSheetURL;
@@ -127,9 +142,13 @@ class Animal {
             },
             "feed": {
                 name: "feed",
+                frames: 4,
+                rowNum: 4,
             },
-            "clean": {
-                name: "clean"
+            "play": {
+                name: "play",
+                frames: 3,
+                rowNum: 3
             }
         };
     }
@@ -169,6 +188,12 @@ class Animal {
     
 
     updateStatus() {
+        this.hungerVal = this.hungerVal > 100 ? 100 : this.hungerVal;
+        this.cleanVal = this.cleanVal > 100 ? 100 : this.cleanVal;
+        this.playVal = this.playVal > 100 ? 100 : this.playVal;
+
+
+
         hungerText.innerText = `${this.hungerVal.toString()}%`;
         cleanText.innerText = `${this.cleanVal.toString()}%`;
         enjyText.innerText = `${this.playVal.toString()}%`;
@@ -216,7 +241,52 @@ class Animal {
     }
 
     petIncrease(types: string, gold: number) {
-        
+        console.log(types);
+        switch(types) {
+            case "feed":
+                if (gold >= 75) {
+                    coins -= 75;
+                    this.updateState(AnimalState.Eating);
+                    console.log("feed");
+                    this.hungerVal += 50;
+                    var audio = new Audio('/munchin.mp3');
+                    audio.play();
+                } else {
+                    console.log("Not enough gold play sound");
+                    var audio = new Audio('/error.mp3');
+                    audio.play();
+                }
+                
+                break;
+            case "play":
+                if (gold >= 50) {
+                    coins -= 50;
+                    this.updateState(AnimalState.Playing);
+                    console.log("play");
+                    this.playVal += 30;
+                } else {
+                    console.log("Not enough gold play sound");
+                    var audio = new Audio('/error.mp3');
+                    audio.play();
+                }
+
+                break;
+            case "clean":
+                if (gold >= 50) {
+                    coins -= 50;
+                    this.updateState(AnimalState.Clean);
+                    console.log("clean");
+                    this.cleanVal += 50; 
+                } else {
+                    console.log("Not enough gold play sound");
+                    var audio = new Audio('/error.mp3');
+                    audio.play();
+                }
+                
+                break;
+            default:
+                break;
+        }
     }
 
     /*STATUSES END*/ 
@@ -266,6 +336,14 @@ class Animal {
                 const deltaY = this.vy * (deltaTime / 1000);
                 this.xPos += deltaX * this.speed;
                 this.yPos += deltaY * this.speed;
+                break;
+            case AnimalState.Clean:
+                break;
+            case AnimalState.Eating:
+                this.changeFrame(this.anmStates.feed.rowNum, this.anmStates.feed.frames);
+                break;
+            case AnimalState.Playing:
+                this.changeFrame(this.anmStates.play.rowNum, this.anmStates.play.frames);
                 break;
         }
     }
@@ -328,21 +406,21 @@ function handleVisibilityChange() {
     if (document.hidden) {
         // Tab is not visible, so pause the animation and intervals
         cancelAnimationFrame(animationId);
-        clearInterval(hungerIntervalId);
+        /*clearInterval(hungerIntervalId);
         clearInterval(enjoymentIntervalId);
-        clearInterval(cleanlinessIntervalId);
+        clearInterval(cleanlinessIntervalId);*/
     } else {
 
-        clearInterval(hungerIntervalId);
+        /*clearInterval(hungerIntervalId);
         clearInterval(enjoymentIntervalId);
-        clearInterval(cleanlinessIntervalId);
+        clearInterval(cleanlinessIntervalId);*/
         cancelAnimationFrame(animationId);
 
         // Tab is visible, so resume the animation and intervals
         lastFrameTime = performance.now(); // Reset lastFrameTime to avoid large deltaTime on resume
         animate(); // Start animation loop again
         // Restart intervals for each status
-        hungerIntervalId = setInterval(() => {
+       /* hungerIntervalId = setInterval(() => {
             myAnimal.decreaseHunger();
         }, 2000);
         enjoymentIntervalId = setInterval(() => {
@@ -350,7 +428,7 @@ function handleVisibilityChange() {
         }, 5000);
         cleanlinessIntervalId = setInterval(() => {
             myAnimal.decreaseClean();
-        }, 3000);
+        }, 3000);*/
         
     }
 }
@@ -400,3 +478,38 @@ function updateCoins() {
 setInterval(() => {
     updateCoins() 
 }, 1000);
+
+
+/* Button Handler */
+
+const feedButton = document.querySelector('#feedButton');
+const playButton = document.querySelector('#playButton');
+const cleanButton = document.querySelector('#cleanButton');
+
+let canClick = true;
+// Function to handle pet actions
+function handlePetAction(action: string) {
+    return function(event: { preventDefault: () => void; stopPropagation: () => void; }) {
+        event.preventDefault(); // Prevent default action
+        event.stopPropagation(); // Stop event propagation
+
+        if (canClick == true) {
+            canClick = false;
+            // Perform the action based on the button clicked
+            myAnimal.petIncrease(action, coins);
+
+            setInterval(() => {
+                canClick = true;
+                console.log(canClick);
+            }, 2000)
+        }
+
+    };
+}
+
+// Add event listeners to the buttons
+feedButton?.addEventListener('click', handlePetAction('feed'));
+playButton?.addEventListener('click', handlePetAction('play'));
+cleanButton?.addEventListener('click', handlePetAction('clean'));
+
+
