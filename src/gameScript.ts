@@ -3,11 +3,27 @@
 const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
 const ctx  = canvas?.getContext('2d')!;
 
-class newPet {
-    constructor() {
-        
+class NewPet {
+    spriteSheet: string;
+    anmStates: any;
+    cols: number;
+    rows: number;
+    spriteWidth: number;
+    spriteHeight: number;
+
+    constructor(spriteSheet: string, cols: number, rows: number, spriteWidth: number, spriteHeight: number, stateList : any) {
+        this.spriteSheet = spriteSheet;
+        this.anmStates = stateList; // Initializing animation states, you might want to assign appropriate values here.
+        this.cols = cols;
+        this.rows = rows;
+        this.spriteWidth = spriteWidth;
+        this.spriteHeight = spriteHeight;
     }
 }
+
+
+//Fox 512 352
+//Purple Thing 700 700
 
 
 let CANVAS_WIDTH : number =  canvas.width = canvas.getBoundingClientRect().width;
@@ -73,13 +89,13 @@ class Animal {
 
     //Animation States
     image: HTMLImageElement = new Image();
-    spriteSheetURL: string = '/SpriteSheet.png';
-    cols: number = 6;
-    rows: number = 6;
-    spriteWidth: number = 700;
-    spriteHeight: number = 700;
-    spriteWdOfst: number = this.spriteWidth / this.cols; // width in px / cols spacing = Value of SpriteWidth
-    spriteHtOfst: number = this.spriteHeight / this.rows; // height in px / rows spacing = Sprite height
+    spriteSheetURL!: string;
+    cols!: number;
+    rows!: number;
+    spriteWidth!: number;
+    spriteHeight!: number;
+    spriteWdOfst!: number;// width in px / cols spacing = Value of SpriteWidth
+    spriteHtOfst!: number;// height in px / rows spacing = Sprite height
     frameX: number = 0;
     frameY: number = 1;
     gameFrame: number = 0;
@@ -87,11 +103,12 @@ class Animal {
 
     anmStates: any;
 
-    constructor(xPos: number, yPos: number, w: number, h: number) {
+    constructor(xPos: number, yPos: number, w: number, h: number, pet : NewPet) {
         this.hungerVal = 100;
         this.cleanVal = 100;
         this.playVal = 100;
 
+        this.updateSpriteVals(pet);
 
         //Position and Size
         this.xPos = xPos;
@@ -118,48 +135,22 @@ class Animal {
         }
         
 
-        //Image 
-        this.image.src = this.spriteSheetURL;
 
-
-
-        // SPRITE ANIMATION POSITIONS
-        this.anmStates = {
-            "idle": {
-                name: "idle",
-                frames: 6,
-                rowNum: 0
-            },
-            "walkleft": {
-                name: "walk-left",
-                frames: 6,
-                rowNum: 1            
-            }, 
-            "walkright": {
-                name: "walk-right",
-                frames: 6, 
-                rowNum: 2           
-            },
-            "feed": {
-                name: "feed",
-                frames: 4,
-                rowNum: 4,
-            },
-            "play": {
-                name: "play",
-                frames: 3,
-                rowNum: 3
-            }
-        };
     }
 
-    updateSpriteVals (newSpriteSheet: string, animCols: number, animRows: number, newSpriteHeight: number, newSpriteWidth: number) {
+    updateSpriteVals (newPetValue: NewPet) {
 
-        this.spriteSheetURL = newSpriteSheet;
-        this.cols = animCols;
-        this.rows = animRows;
-        this.spriteWidth = newSpriteWidth;
-        this.spriteHeight = newSpriteHeight;
+        
+        this.anmStates = newPetValue.anmStates;
+        this.spriteSheetURL = newPetValue.spriteSheet;
+        this.cols = newPetValue.cols;
+        this.rows = newPetValue.rows;
+        this.spriteWidth = newPetValue.spriteWidth;
+        this.spriteHeight = newPetValue.spriteHeight;
+
+        this.spriteHtOfst = this.spriteHeight / this.rows;
+        this.spriteWdOfst = this.spriteWidth / this.cols; 
+        this.image.src = this.spriteSheetURL;
     }
 
     animateSprite(deltaTime: number) {
@@ -180,8 +171,8 @@ class Animal {
             this.spriteHtOfst,
             this.xPos,
             this.yPos,
-            this.w + 50,
-            this.h + 10
+            (this.w * 1.2) + 50,
+            (this.h * 1.2 )+ 10
         );
 
     }
@@ -358,9 +349,66 @@ class Animal {
 }
 
 
+/** ALL TYPES OF PET */
+const munchKin = new NewPet('/SpriteSheet.png', 6, 6, 700, 700, {
+    "idle": {
+        name: "idle",
+        frames: 6,
+        rowNum: 0
+    },
+    "walkleft": {
+        name: "walk-left",
+        frames: 6,
+        rowNum: 1            
+    }, 
+    "walkright": {
+        name: "walk-right",
+        frames: 6, 
+        rowNum: 2           
+    },
+    "feed": {
+        name: "feed",
+        frames: 4,
+        rowNum: 4,
+    },
+    "play": {
+        name: "play",
+        frames: 3,
+        rowNum: 3
+    }
+});
+
+const fox = new NewPet('/fox-spritesheet.png', 6, 5, 522, 350, {
+    "idle": {
+        name: "idle",
+        frames: 3,
+        rowNum: 0
+    },
+    "walkleft": {
+        name: "walk-left",
+        frames: 6,
+        rowNum: 1            
+    }, 
+    "walkright": {
+        name: "walk-right",
+        frames: 6, 
+        rowNum: 2           
+    },
+    "feed": {
+        name: "feed",
+        frames: 3,
+        rowNum: 4,
+    },
+    "play": {
+        name: "play",
+        frames: 3,
+        rowNum: 3
+    }
+})
 
 
-let myAnimal: Animal = new Animal(randomSpawnX, randomSpawnY, CANVAS_WIDTH * .05, CANVAS_HEIGHT * .10);
+
+let myAnimal: Animal = new Animal(randomSpawnX, randomSpawnY, CANVAS_WIDTH * .05, CANVAS_HEIGHT * .10, fox);
 
 let lastFrameTime = performance.now(); // Move lastFrameTime to the global scope
 
@@ -471,7 +519,7 @@ updateHearts();
 var coinText: HTMLElement | null = document.querySelector('.coins p');
 
 function updateCoins() {
-    coins++;
+    coins += 5;
     coinText!.innerText = `COINS: ${coins}`;
 }
 
