@@ -122,6 +122,34 @@ body {
   width: 95%;
   height: 5rem;
   margin: 5px;
+  position: relative;
+  transition: 0.3s all;
+}
+
+.shop-menu .window div:hover {
+  transform: translate(-5px, 0);
+}
+
+.shop-menu .window div button {
+  cursor: pointer;
+  position: absolute ;
+  background-color: white;
+  opacity: 0.8;
+  text-align: center;
+  justify-content: center;
+  width: 30%;
+  font-size: larger;
+  font-weight: bolder;
+  height: 100%;
+  right: 0%;
+  border: 0px black;  
+  color: black;
+  transition: 0.3s all;
+}
+
+.shop-menu .window div button:hover {
+  background-color: #F3CA52;
+  opacity: 1;
 }
 
 /* SELECTOR */

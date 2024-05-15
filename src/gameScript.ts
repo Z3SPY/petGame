@@ -127,10 +127,15 @@ class Animal {
         } else {
             setInterval(() => {
                 // Transition to the Idle state after the interval finishes
-                this.updateState(AnimalState.Idle);
-                setTimeout(() => {
-                    this.updateState(AnimalState.Moving);
-                }, idleInterval);
+
+                if (this.state == AnimalState.Clean || this.state == AnimalState.Eating || this.state == AnimalState.Playing) {
+                    this.updateState(AnimalState.Idle);
+                    setTimeout(() => {
+                        this.updateState(AnimalState.Moving);
+                    }, idleInterval);
+                }
+
+                
             }, moveInterval);
         }
         
@@ -329,6 +334,7 @@ class Animal {
                 this.yPos += deltaY * this.speed;
                 break;
             case AnimalState.Clean:
+                this.changeFrame(this.anmStates.play.rowNum, this.anmStates.play.frames);
                 break;
             case AnimalState.Eating:
                 this.changeFrame(this.anmStates.feed.rowNum, this.anmStates.feed.frames);
@@ -406,9 +412,27 @@ const fox = new NewPet('/fox-spritesheet.png', 6, 5, 522, 350, {
     }
 })
 
+/** SHOP FUNCTION */
+let letShopArr = [
+    munchKin,
+    fox
+
+]
+
+const shopMenu =  document.querySelector(".window");
+
+console.log(shopMenu);  
+letShopArr.forEach(e => {
+    var element = document.createElement('div');
+    element.classList.add("bar");
+    element.innerHTML = `  
+    <button> SWITCH </button> `
+    shopMenu?.append(element);
+});
 
 
-let myAnimal: Animal = new Animal(randomSpawnX, randomSpawnY, CANVAS_WIDTH * .05, CANVAS_HEIGHT * .10, fox);
+
+let myAnimal: Animal = new Animal(randomSpawnX, randomSpawnY, CANVAS_WIDTH * .05, CANVAS_HEIGHT * .10, munchKin);
 
 let lastFrameTime = performance.now(); // Move lastFrameTime to the global scope
 
